@@ -1,10 +1,10 @@
 from PIL import Image
 import sys
 
-def image_print(fnm, txt_file):
+def image_print(fpath, txt_path):
     #try to open image
     try:
-        im = Image.open(fnm)
+        im = Image.open(fpath)
     except:
         print("failed to open image file")
         raise Exception("image open failure")
@@ -13,8 +13,8 @@ def image_print(fnm, txt_file):
     
     #change image to single band (B & W) and scale it
     im = im.convert("L")
-    x = 64
-    y = 64
+    x = 55
+    y = 55
     size = (x, y)
     im.thumbnail(size, Image.NEAREST)
     
@@ -40,7 +40,7 @@ def image_print(fnm, txt_file):
     lst = [[' ' for i in range(x)] for i in range(y)]
 
     try:
-       f = open(txt_file, "w")
+       f = open(txt_path, "w")
     except:
         raise Exception("couldn't open text file")
     
@@ -90,12 +90,12 @@ def image_print(fnm, txt_file):
                   
     print("success")
 
-def main():
-    fnm = ""
-    if (not(len(sys.argv) == 3)):
-        print("wrong no. of arguments")
-    else:
-        fnm = sys.argv[1]
-        txt_file = sys.argv[2]
-        image_print(fnm, txt_file)
-main()
+# def main():
+#     fnm = ""
+#     if (not(len(sys.argv) == 3)):
+#         print("wrong no. of arguments")
+#     else:
+#         fnm = sys.argv[1]
+#         txt_file = sys.argv[2]
+#         image_print(fnm, txt_file)
+# main()
