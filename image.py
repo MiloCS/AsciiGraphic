@@ -1,7 +1,7 @@
 from PIL import Image
 import sys
 
-def image_print(fnm):
+def image_print(fnm, txt_file):
     #try to open image
     try:
         im = Image.open(fnm)
@@ -11,10 +11,10 @@ def image_print(fnm):
     print("Img Mode: " + im.mode)
     print("Img Size: " + str(im.size))
     
-    #change image to single band (B & W) and scale it to 64x64
+    #change image to single band (B & W) and scale it
     im = im.convert("L")
-    x = 80
-    y = 80
+    x = 64
+    y = 64
     size = (x, y)
     im.thumbnail(size, Image.NEAREST)
     
@@ -38,6 +38,11 @@ def image_print(fnm):
     
     #initialize 2d list for characters
     lst = [[' ' for i in range(x)] for i in range(y)]
+
+    try:
+       f = open(txt_file, "w")
+    except:
+        raise Exception("couldn't open text file")
     
     #print pixels      
     for j in range(im.size[1]):
@@ -48,25 +53,33 @@ def image_print(fnm):
                 print((i, j))
                 raise Exception()
             if (px < p1):
-                sys.stdout.write(2*'%')
+                #sys.stdout.write(2*'%')
+                f.write(2*'%')
             elif (px < p2):
-                sys.stdout.write(2*'#')
+                #sys.stdout.write(2*'#')
+                f.write(2*'#')
             elif (px < p3):
-                sys.stdout.write(2*'(')
+                #sys.stdout.write(2*'(')
+                f.write(2*'(')
             elif (px < p4):
-                sys.stdout.write(2*'*')
+                #sys.stdout.write(2*'*')
+                f.write(2*'*')
             elif (px < p5):
-                sys.stdout.write('//')
+                #sys.stdout.write('//')
+                f.write(2*'/')
             elif (px < p6):
-                sys.stdout.write('\'\'')
+                #sys.stdout.write('\'\'')
+                f.write(2*'\'')
             elif (px < p7):
-                sys.stdout.write('..')
+                #sys.stdout.write('..')
+                f.write(2*'.')
             elif (px <= p8):
-                sys.stdout.write('  ')
+                #sys.stdout.write('  ')
+                f.write(2*' ')
             else:
                 print("pixel value: " + str(px))
                 raise Exception("pixel assignment error")
-        print('')
+        f.write('\n')
     
     #print ascii image
 
@@ -79,9 +92,10 @@ def image_print(fnm):
 
 def main():
     fnm = ""
-    if (not(len(sys.argv) == 2)):
+    if (not(len(sys.argv) == 3)):
         print("wrong no. of arguments")
     else:
         fnm = sys.argv[1]
-        image_print(fnm)
+        txt_file = sys.argv[2]
+        image_print(fnm, txt_file)
 main()
