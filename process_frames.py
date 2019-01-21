@@ -1,12 +1,13 @@
+import sys
 import os
 from moviepy.editor import *
 import image
+import time
 
 def get_frame_times(clip):
 	lst = []
 	t = 0
 	end = clip.duration
-	print(clip.duration)
 	while t < end:
 		lst.append(t)
 		t += 0.125
@@ -15,9 +16,10 @@ def get_frame_times(clip):
 def extract_frames(m, imgdir):
 	clip = VideoFileClip(m)
 	times = get_frame_times(clip)
+	f = open("milo.txt", "w")
+	f.write(str(len(times)))
 	for t in times:
 		imgpath = os.path.join(os.getcwd(), imgdir + '\\{}.jpg'.format(t))
-		print(imgpath)
 		clip.save_frame(imgpath, t)
 
 def process_frames(imgdir, txtdir):
@@ -31,4 +33,16 @@ def process_frames(imgdir, txtdir):
 		image.image_print(fnm, txtnm)
 		count += 1
 
+def main():
+	time.sleep(2)
+	if (not(len(sys.argv) == 4)):
+		print("wrong no. of arguments")
+	else:
+		m = sys.argv[1]
+		imgdir = sys.argv[2]
+		txtdir = sys.argv[3]
+		extract_frames(m, imgdir)
+		process_frames(imgdir, txtdir)
 
+main()
+exit()

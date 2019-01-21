@@ -8,8 +8,6 @@ def image_print(fpath, txt_path):
     except:
         print("failed to open image file")
         raise Exception("image open failure")
-    print("Img Mode: " + im.mode)
-    print("Img Size: " + str(im.size))
     
     #change image to single band (B & W) and scale it
     im = im.convert("L")
@@ -22,8 +20,6 @@ def image_print(fpath, txt_path):
     xtrema = im.getextrema()
     mnv = xtrema[0]
     mxv = xtrema[1]
-    print(mnv)
-    print(mxv)
     diff = (mxv - mnv)/8
     p1 = mnv + diff #%
     p2 = mnv + 2 * diff ##
@@ -33,8 +29,6 @@ def image_print(fpath, txt_path):
     p6 = mnv + 6 * diff #'
     p7 = mnv + 7 * diff #.
     p8 = 255 #
-    
-    print("Custom character cutoffs: " + str((p1, p2, p3, p4, p5, p6, p7, p8)))
     
     #initialize 2d list for characters
     lst = [[' ' for i in range(x)] for i in range(y)]
@@ -77,7 +71,6 @@ def image_print(fpath, txt_path):
                 #sys.stdout.write('  ')
                 f.write(2*' ')
             else:
-                print("pixel value: " + str(px))
                 raise Exception("pixel assignment error")
         f.write('\n')
     
@@ -87,8 +80,6 @@ def image_print(fpath, txt_path):
         #for i in range(j):
             #sys.stdout.write(lst[i][j])
         #print('')
-                  
-    print("success")
 
 # def main():
 #     fnm = ""
