@@ -6,3 +6,5 @@ A project for converting images and videos into ascii-based images and videos, w
 
 ## Tiling
 Code for tiling images to compose into other images
+The following is an example of an image composed of a set of other images, where L1 distance is used to compare the image blocks and find the closest one:
+![seaport tiled](tiling/seaport_tiled.jpg)
