@@ -1,6 +1,9 @@
 import numpy as np
 import sys
-from load_images import load_images, SECTION_SIZE, load_base_image
+try:
+	from .load_images import load_images, SECTION_SIZE, load_base_image
+except ImportError:
+	from load_images import load_images, SECTION_SIZE, load_base_image
 from PIL import Image
 
 np.set_printoptions(threshold=sys.maxsize)
@@ -23,13 +26,13 @@ def construct_tiling(imgs, base):
 
 	return tiled_img
 
+if __name__ == '__main__':
+	image_to_tile = sys.argv[1]
+	tiling_images_folder = sys.argv[2]
+	i = load_images(tiling_images_folder)
+	b = load_base_image(image_to_tile)
 
-image_to_tile = sys.argv[1]
-tiling_images_folder = sys.argv[2]
-i = load_images(tiling_images_folder)
-b = load_base_image(image_to_tile)
-
-c = construct_tiling(i, b)
-result = Image.fromarray(np.uint8(c)).convert('RGB')
-result.show()
-result.save(image_to_tile.split(".")[0] + "_tiled.jpg")
+	c = construct_tiling(i, b)
+	result = Image.fromarray(np.uint8(c)).convert('RGB')
+	result.show()
+	result.save(image_to_tile.split(".")[0] + "_tiled.jpg")

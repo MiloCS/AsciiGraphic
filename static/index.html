@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graphical Tiling Experiments</title>
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --background: #F9FAFB;
+            --text: #111827;
+            --border: #E5E7EB;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            margin: 0;
+            padding: 2rem;
+            line-height: 1.5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .shared-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        .main-content {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+        .panel {
+            flex: 1;
+            min-width: 300px;
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+        }
+        h1, h2 {
+            margin-top: 0;
+        }
+        input[type="file"] {
+            margin-bottom: 1rem;
+            display: block;
+            width: 100%;
+        }
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #4338CA;
+        }
+        button:disabled {
+            background-color: #9CA3AF;
+            cursor: not-allowed;
+        }
+        .result-area {
+            margin-top: 1.5rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        #ascii-output {
+            font-family: monospace;
+            white-space: pre;
+            background: #f3f4f6;
+            padding: 1rem;
+            border-radius: 4px;
+            overflow-x: auto;
+            flex-grow: 1;
+            font-size: 8px;
+            line-height: 8px;
+            min-height: 200px;
+        }
+        #tiling-preview {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+            display: none;
+            margin-bottom: 1rem;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 1rem;
+            color: #6B7280;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Graphical Tiling Experiments</h1>
+        </header>
+
+        <section class="shared-section">
+            <h2>1. Select Target Image</h2>
+            <p>This image will be used for both Photo Tiling and ASCII generation.</p>
+            <input type="file" id="target-image" accept="image/*">
+        </section>
+
+        <div class="main-content">
+            <section class="panel">
+                <h2>Photo Tiling</h2>
+                <p>Upload a batch of images (max 30, approx max 5MB each recommended) to tile the target image.</p>
+                <input type="file" id="batch-images" accept="image/*" multiple>
+                <button id="btn-tile">Tile Image</button>
+                <div id="loading-tile" class="loading">Processing tiling... this may take a moment.</div>
+                
+                <div class="result-area" id="tile-result-area" style="display: none;">
+                    <h3>Preview</h3>
+                    <img id="tiling-preview" alt="Tiled Preview">
+                    <a id="download-tiled" download="tiled_image.jpg" style="text-decoration: none;">
+                        <button>Download Tiled Image</button>
+                    </a>
+                </div>
+            </section>
+
+            <section class="panel">
+                <h2>ASCII Tiling</h2>
+                <p>Convert the target image into an ASCII text representation.</p>
+                <button id="btn-ascii">Generate ASCII</button>
+                <div id="loading-ascii" class="loading">Generating ASCII...</div>
+                
+                <div class="result-area">
+                    <h3>Output</h3>
+                    <div id="ascii-output"></div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script>
+        const targetImageInput = document.getElementById('target-image');
+        
+        // Photo Tiling
+        const batchImagesInput = document.getElementById('batch-images');
+        const btnTile = document.getElementById('btn-tile');
+        const loadingTile = document.getElementById('loading-tile');
+        const tileResultArea = document.getElementById('tile-result-area');
+        const tilingPreview = document.getElementById('tiling-preview');
+        const downloadTiled = document.getElementById('download-tiled');
+
+        btnTile.addEventListener('click', async () => {
+            if (!targetImageInput.files[0]) {
+                alert('Please select a target image first.');
+                return;
+            }
+            if (batchImagesInput.files.length === 0) {
+                alert('Please select at least one batch image.');
+                return;
+            }
+
+            if (batchImagesInput.files.length > 30) {
+                alert('Please select a maximum of 30 images.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('target_image', targetImageInput.files[0]);
+            
+            for (let i = 0; i < batchImagesInput.files.length; i++) {
+                formData.append('batch_images', batchImagesInput.files[i]);
+            }
+
+            btnTile.disabled = true;
+            loadingTile.style.display = 'block';
+            tileResultArea.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/tile', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Tiling failed. Check if batch images are valid.');
+                }
+                
+                const data = await response.json();
+                tilingPreview.src = data.result_url;
+                tilingPreview.style.display = 'block';
+                downloadTiled.href = data.result_url;
+                tileResultArea.style.display = 'block';
+            } catch (error) {
+                alert(error.message);
+            } finally {
+                btnTile.disabled = false;
+                loadingTile.style.display = 'none';
+            }
+        });
+
+        // ASCII Tiling
+        const btnAscii = document.getElementById('btn-ascii');
+        const loadingAscii = document.getElementById('loading-ascii');
+        const asciiOutput = document.getElementById('ascii-output');
+
+        btnAscii.addEventListener('click', async () => {
+            if (!targetImageInput.files[0]) {
+                alert('Please select a target image first.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('target_image', targetImageInput.files[0]);
+
+            btnAscii.disabled = true;
+            loadingAscii.style.display = 'block';
+            asciiOutput.textContent = '';
+
+            try {
+                const response = await fetch('/api/ascii', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error('ASCII generation failed.');
+                }
+                
+                const data = await response.json();
+                asciiOutput.textContent = data.ascii;
+            } catch (error) {
+                alert(error.message);
+            } finally {
+                btnAscii.disabled = false;
+                loadingAscii.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,6 +1,66 @@
 from PIL import Image
 import sys
 
+def image_to_ascii_string(fpath):
+    #try to open image
+    try:
+        im = Image.open(fpath)
+    except:
+        print("failed to open image file")
+        raise Exception("image open failure")
+    
+    #change image to single band (B & W) and scale it
+    im = im.convert("L")
+    x = 55
+    y = 55
+    size = (x, y)
+    im.thumbnail(size, Image.NEAREST)
+    
+    #assign values for characters
+    xtrema = im.getextrema()
+    mnv = xtrema[0]
+    mxv = xtrema[1]
+    diff = (mxv - mnv)/8
+    p1 = mnv + diff #%
+    p2 = mnv + 2 * diff ##
+    p3 = mnv + 3 * diff #(
+    p4 = mnv + 4 * diff #*
+    p5 = mnv + 5 * diff #/
+    p6 = mnv + 6 * diff #'
+    p7 = mnv + 7 * diff #.
+    p8 = 255 #
+    
+    res = []
+    
+    #print pixels      
+    for j in range(im.size[1]):
+        for i in range(im.size[0]):
+            try:
+                px = im.getpixel((i, j))
+            except:
+                print((i, j))
+                raise Exception()
+            if (px < p1):
+                res.append(2*'%')
+            elif (px < p2):
+                res.append(2*'#')
+            elif (px < p3):
+                res.append(2*'(')
+            elif (px < p4):
+                res.append(2*'*')
+            elif (px < p5):
+                res.append(2*'/')
+            elif (px < p6):
+                res.append(2*'\'')
+            elif (px < p7):
+                res.append(2*'.')
+            elif (px <= p8):
+                res.append(2*' ')
+            else:
+                raise Exception("pixel assignment error")
+        res.append('\n')
+    return "".join(res)
+
 def image_print(fpath, txt_path):
     #try to open image
     try:

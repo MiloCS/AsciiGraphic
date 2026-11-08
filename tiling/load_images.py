@@ -15,17 +15,23 @@ def load_images(tiling_images_folder):
 	size = SECTION_SIZE, SECTION_SIZE
 
 	for file in os.listdir(tiling_images_folder):
-		with Image.open(tiling_images_folder + "/" + file) as im:
-			if im.mode in ('RGBA', 'LA') or (im.mode == 'P' and 'transparency' in im.info):
-				continue
+		try:
+			with Image.open(os.path.join(tiling_images_folder, file)) as im:
+				if im.mode in ('RGBA', 'LA') or (im.mode == 'P' and 'transparency' in im.info):
+					# Try to convert to RGB instead of skipping, or skip if that fails
+					im = im.convert('RGB')
+				
+				im = crop_center(im)
+				im.thumbnail(size)
 
-			im = crop_center(im)
-			im.thumbnail(size)
+				#adding to numpy array
+				a = np.array(im)
+				imgs.append(a)
+		except Exception:
+			continue
 
-			#adding to numpy array
-			a = np.array(im)
-			imgs.append(a)
-
+	if len(imgs) == 0:
+		raise ValueError("No valid images found in the directory.")
 	return np.array(imgs).astype(np.int8)
 
 def load_base_image(filename):
