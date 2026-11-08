@@ -11,13 +11,16 @@ from tiling.load_images import load_images, load_base_image
 from tiling.create_tiled_image import construct_tiling
 from ascii.image import image_to_ascii_string
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+STATIC_DIR = os.path.join(BASE_DIR, "static")
+
 app = FastAPI()
-os.makedirs("static/results", exist_ok=True)
-app.mount("/static", StaticFiles(directory="static"), name="static")
+os.makedirs(os.path.join(STATIC_DIR, "results"), exist_ok=True)
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 @app.get("/", response_class=HTMLResponse)
 async def index():
-    return FileResponse("static/index.html")
+    return FileResponse(os.path.join(STATIC_DIR, "index.html"))
 
 @app.post("/api/ascii")
 async def generate_ascii(target_image: UploadFile = File(...)):
@@ -61,10 +64,11 @@ async def generate_tiling(target_image: UploadFile = File(...), batch_images: li
         
         result_img = Image.fromarray(np.uint8(c)).convert('RGB')
         result_filename = f"tiled_{os.urandom(4).hex()}.jpg"
-        result_path = os.path.join("static/results", result_filename)
+        result_path = os.path.join(STATIC_DIR, "results", result_filename)
         result_img.save(result_path)
         
-        return {"result_url": f"/static/results/{result_filename}"}
+        # Determine the base path it was mounted on. Assuming relative to wherever the static files are accessed
+        return {"result_url": f"static/results/{result_filename}"}
         
     finally:
         shutil.rmtree(temp_dir)

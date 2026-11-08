@@ -190,7 +190,7 @@
             tileResultArea.style.display = 'none';
 
             try {
-                const response = await fetch('/api/tile', {
+                const response = await fetch('api/tile', {
                     method: 'POST',
                     body: formData
                 });
@@ -231,7 +231,7 @@
             asciiOutput.textContent = '';
 
             try {
-                const response = await fetch('/api/ascii', {
+                const response = await fetch('api/ascii', {
                     method: 'POST',
                     body: formData
                 });
